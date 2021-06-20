@@ -2,8 +2,19 @@
 Address = {{ virtual_ip_address_ipv4 }},{{ virtual_ip_address_ipv6 }}
 PrivateKey = {{ private_key }}
 ListenPort = {{ port }}
+
+# IPv4
 PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ network_adapter }} -j MASQUERADE
 PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o {{ network_adapter }} -j MASQUERADE
+
+# IPv6
+PostUp = ip6tables -A FORWARD -i %i -j ACCEPT
+PostUp = ip6tables -A FORWARD -o %i -j ACCEPT
+PostUp = ip6tables -t nat -A POSTROUTING -o {{ network_adapter }} -j MASQUERADE
+PostDown = ip6tables -D FORWARD -i %i -j ACCEPT
+PostDown = ip6tables -D FORWARD -o %i -j ACCEPT
+PostDown = ip6tables -t nat -D POSTROUTING -o {{ network_adapter }} -j MASQUERADE
+
 SaveConfig = false
 
 {% for device in peers -%}
