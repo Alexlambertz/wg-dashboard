@@ -2,17 +2,20 @@
 	<img src="/dev/wg-dashboard-logo.png" />
 </p>
 
-**THIS PROJECT IS UNMAINTAINED**
-
-If you want to take over development please contact us. In the meantime we recommend having a look at:
-
-- https://github.com/tailscale/tailscale
-- https://github.com/subspacecommunity/subspace
-- https://github.com/EmbarkStudios/wg-ui
-
 # wg-dashboard
 
 ![Dashboard](dev/dashboard.png)
+
+## Modifications in this Fork
+
+1. Allow to disable Core DNS Integration (Config: core_dns)
+2. Implemented IPv6 Support
+3. Allow to disable UFW Handling for 3000 Port (Config: handleUFW)
+
+## TODO:
+- Generate valid IPv6 address when adding peer
+
+# Original Readme
 
 ## Description
 
