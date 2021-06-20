@@ -5,11 +5,11 @@ const session = require("express-session");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const rateLimit = require("express-rate-limit");
-const {cidr} = require("node-cidr");
 const crypto = require("crypto");
 
 const dataManager = require("./dataManager");
 const wireguardHelper = require("./wgHelper");
+const ipHelper = require("./ipHelper");
 
 exports.initServer = (state, cb) => {
     const app = express();
@@ -204,29 +204,41 @@ exports.initServer = (state, cb) => {
             let virtual_ip = "";
 
             if (state.server_config.virtual_ip_address_ipv4) {
-                const ipList = cidr.ips(
-                    `${state.server_config.virtual_ip_address_ipv4}`
-                );
+                let usedList = [];
 
-                // delete the ip of the server
-                const mainIndex = ipList.findIndex(
-                    el => el === state.server_config.virtual_ip_address_ipv4.replace(/\/.*/gi, "")
-                );
-                ipList.splice(mainIndex, 1);
+                usedList.push(state.server_config.virtual_ip_address_ipv4.replace(/\/.*/gi, ""))
+                state.server_config.peers.forEach(function (peer) {
+                    var addresses = peer.virtual_ip.split(",");
+                    addresses = addresses.map((address) => address.replace(/\/.*/gi, ""));
+                    usedList = usedList.concat(addresses);
+                });
 
-                // delete the ips of all available clients
-                for (let i = 0; i < state.server_config.peers.length; i++) {
-                    const index = ipList.findIndex(
-                        el => el === state.server_config.peers[i].virtual_ip
-                    );
-                    ipList.splice(index, 1);
-                }
-
-                // check if there is a free ip available
-                if (ipList[0]) {
-                    virtual_ip = ipList[0];
-                }
+                const freeIPv4 = ipHelper.getNextFreeAddress(state.server_config.virtual_ip_address_ipv4, usedList);
+                console.log(freeIPv4);
+                virtual_ip = freeIPv4 || "";
             }
+
+            if (state.server_config.virtual_ip_address_ipv6) {
+                let usedList = [];
+
+                usedList.push(state.server_config.virtual_ip_address_ipv6.replace(/\/.*/gi, ""))
+                state.server_config.peers.forEach(function (peer) {
+                    var addresses = peer.virtual_ip.split(",");
+                    addresses = addresses.map((address) => address.replace(/\/.*/gi, ""));
+                    usedList = usedList.concat(addresses);
+                });
+
+                const freeIPv6 = ipHelper.getNextFreeAddress(state.server_config.virtual_ip_address_ipv6, usedList);
+                console.log(freeIPv6);
+
+                if (virtual_ip && freeIPv6) {
+                    virtual_ip+=",";
+                }
+
+                virtual_ip += freeIPv6 || "";
+            }
+
+            console.log("virtual_ip = "+JSON.stringify(virtual_ip));
 
             state.server_config.peers.push({
                 id,

@@ -12,9 +12,6 @@
 2. Implemented IPv6 Support
 3. Allow to disable UFW Handling for 3000 Port (Config: handleUFW)
 
-## TODO:
-- Generate valid IPv6 address when adding peer
-
 # Original Readme
 
 ## Description

@@ -23,8 +23,9 @@
     "express": "^4.17.1",
     "express-rate-limit": "^5.0.0",
     "express-session": "^1.16.2",
+    "ip-cidr": "^3.0.2",
+    "ipaddr.js": "^1.9.0",
     "morgan": "^1.9.1",
-    "node-cidr": "^1.0.0",
     "nunjucks": "^3.2.0"
   },
   "devDependencies": {
