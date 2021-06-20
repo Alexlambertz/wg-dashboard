@@ -1,5 +1,5 @@
 [Interface]
-Address = {{ virtual_ip_address_ipv4 }} {{ virtual_ip_address_ipv6 }}
+Address = {{ virtual_ip_address_ipv4 }},{{ virtual_ip_address_ipv6 }}
 PrivateKey = {{ private_key }}
 ListenPort = {{ port }}
 PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o {{ network_adapter }} -j MASQUERADE
@@ -11,6 +11,6 @@ SaveConfig = false
 	[Peer]
 	# {{ device.device }}
 	PublicKey = {{ device.public_key }}
-	AllowedIPs = {{ device.virtual_ip }}/32
+	AllowedIPs = {{ device.virtual_ip }}
 	{%- endif %}
 {% endfor %}
