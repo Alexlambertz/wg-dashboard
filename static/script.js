@@ -1,4 +1,4 @@
-$("span[data-toggle='tab']").on("shown.bs.tab", function(e) {
+$("span[data-toggle='tab']").on("shown.bs.tab", function (e) {
 	// e.target // newly activated tab
 	$(e.target).addClass("linkActive");
 	$(e.target)
@@ -43,7 +43,7 @@ $(document).ready(() => {
 				.parent();
 			const data = {};
 
-			tableRow.find("input").each(function() {
+			tableRow.find("input").each(function () {
 				data[this.name] = this.value;
 			});
 
@@ -62,7 +62,7 @@ $(document).ready(() => {
 				dataType: "json"
 			});
 
-			req.then(function(data) {
+			req.then(function (data) {
 				$(e.currentTarget)
 					.html(`<i class="far fa-edit fa-lg"></i>`)
 					.removeClass("saveBtn")
@@ -78,7 +78,7 @@ $(document).ready(() => {
 				tableRow.find(".activeBtn").attr("disabled", true);
 			});
 
-			req.catch(function(data) {
+			req.catch(function (data) {
 				const msg = data.responseJSON ? data.responseJSON.msg : "";
 				alert("could not save user: " + msg);
 				window.location = "/";
@@ -99,7 +99,7 @@ $(document).ready(() => {
 					method: "DELETE"
 				});
 
-				req.then(function(data) {
+				req.then(function (data) {
 					const index = config.peers.findIndex(
 						el => el.id === tableRow[0].id
 					);
@@ -110,7 +110,7 @@ $(document).ready(() => {
 					checkToast();
 				});
 
-				req.catch(function(data) {
+				req.catch(function (data) {
 					const msg = data.responseJSON ? data.responseJSON.msg : "";
 					alert("could not delete user: " + msg);
 				});
@@ -137,6 +137,9 @@ $(document).ready(() => {
 			$(e.currentTarget).removeClass("gradientOff");
 			$(e.currentTarget).addClass("gradientOn");
 			config.dns_over_tls = true;
+
+			$("#tls_servername_input").removeClass("hidden");
+			$("#tls_servername_input").addClass("visible");
 		}
 	});
 
@@ -147,6 +150,29 @@ $(document).ready(() => {
 			$(e.currentTarget).removeClass("gradientOff");
 			$(e.currentTarget).addClass("gradientOn");
 			config.dns_over_tls = false;
+
+			$("#tls_servername_input").addClass("hidden");
+			$("#tls_servername_input").removeClass("visible");
+		}
+	});
+
+	$("#enableCoreDNS").on("click", e => {
+		if (!$(e.currentTarget).hasClass("gradientOn")) {
+			$("#disableCoreDNS").removeClass("gradientOn");
+			$("#disableCoreDNS").addClass("gradientOff");
+			$(e.currentTarget).removeClass("gradientOff");
+			$(e.currentTarget).addClass("gradientOn");
+			config.core_dns = true;
+		}
+	});
+
+	$("#disableCoreDNS").on("click", e => {
+		if (!$(e.currentTarget).hasClass("gradientOn")) {
+			$("#enableCoreDNS").removeClass("gradientOn");
+			$("#enableCoreDNS").addClass("gradientOff");
+			$(e.currentTarget).removeClass("gradientOff");
+			$(e.currentTarget).addClass("gradientOn");
+			config.core_dns = false;
 		}
 	});
 
@@ -161,13 +187,13 @@ $(document).ready(() => {
 			$("#ip_address")
 				.attr("disabled", false)
 				.css("color", "#4285F4");
-			$("#virtual_ip_address")
+			$("#virtual_ip_address_ipv4")
+				.attr("disabled", false)
+				.css("color", "#4285F4");
+			$("#virtual_ip_address_ipv6")
 				.attr("disabled", false)
 				.css("color", "#4285F4");
 			$("#port")
-				.attr("disabled", false)
-				.css("color", "#4285F4");
-			$("#cidr")
 				.attr("disabled", false)
 				.css("color", "#4285F4");
 			$("#dns")
@@ -185,18 +211,25 @@ $(document).ready(() => {
 			$("#dns_over_tls")
 				.attr("disabled", false)
 				.css("color", "#4285F4");
+			$("#core_dns")
+				.attr("disabled", false)
+				.css("color", "#4285F4");
 			$("#enableTLSoverDNS").attr("disabled", false);
 			$("#disableTLSoverDNS").attr("disabled", false);
+			$("#disableCoreDNS").attr("disabled", false);
+			$("#enableCoreDNS").attr("disabled", false);
 		} else if ($(e.currentTarget).hasClass("saveBtn")) {
 			const ip_address = $("#ip_address").val();
-			const virtual_ip_address = $("#virtual_ip_address").val();
+			const virtual_ip_address_ipv4 = $("#virtual_ip_address_ipv4").val();
+			const virtual_ip_address_ipv6 = $("#virtual_ip_address_ipv6").val();
 			const port = $("#port").val();
-			const cidr = $("#cidr").val();
+			//const cidr = $("#cidr").val();
 			const dns = $("#dns").val();
 			const public_key = $("#public_key").val();
 			const network_adapter = $("#network_adapter").val();
 			const config_path = $("#config_path").val();
-			const dns_over_tls = $("#dns_over_tls").is(":checked");
+			const dns_over_tls = $("#enableTLSoverDNS").hasClass("gradientOn");
+			const core_dns = $("#enableCoreDNS").hasClass("gradientOn");
 			const tls_servername = $("#tls_servername").val();
 
 			const req = $.ajax({
@@ -204,21 +237,23 @@ $(document).ready(() => {
 				method: "PUT",
 				data: JSON.stringify({
 					ip_address: ip_address,
-					virtual_ip_address: virtual_ip_address,
+					virtual_ip_address_ipv4: virtual_ip_address_ipv4,
+					virtual_ip_address_ipv6: virtual_ip_address_ipv6,
 					port: port,
-					cidr: cidr,
+					//cidr: cidr,
 					dns: dns,
 					public_key: public_key,
 					network_adapter: network_adapter,
 					config_path: config_path,
 					dns_over_tls: dns_over_tls,
+					core_dns: core_dns,
 					tls_servername: tls_servername
 				}),
 				contentType: "application/json; charset=utf-8",
 				dataType: "json"
 			});
 
-			req.then(function(data) {
+			req.then(function (data) {
 				$(e.currentTarget)
 					.removeClass("fa-save")
 					.removeClass("saveBtn")
@@ -227,16 +262,16 @@ $(document).ready(() => {
 				$("#ip_address")
 					.attr("disabled", true)
 					.css("color", "#495057");
-				$("#virtual_ip_address")
+				$("#virtual_ip_address_ipv4")
+					.attr("disabled", true)
+					.css("color", "#495057");
+				$("#virtual_ip_address_ipv6")
 					.attr("disabled", true)
 					.css("color", "#495057");
 				$("#port")
 					.attr("disabled", true)
 					.css("color", "#495057");
 				$("#dns")
-					.attr("disabled", true)
-					.css("color", "#495057");
-				$("#cidr")
 					.attr("disabled", true)
 					.css("color", "#495057");
 				$("#public_key")
@@ -254,11 +289,16 @@ $(document).ready(() => {
 				$("#dns_over_tls")
 					.attr("disabled", true)
 					.css("color", "#495057");
+				$("#core_dns")
+					.attr("disabled", true)
+					.css("color", "#495057");
 				$("#enableTLSoverDNS").attr("disabled", true);
 				$("#disableTLSoverDNS").attr("disabled", true);
+				$("#enableCoreDNS").attr("disabled", true);
+				$("#disableCoreDNS").attr("disabled", true);
 			});
 
-			req.catch(function(data) {
+			req.catch(function (data) {
 				const msg = data.responseJSON ? data.responseJSON.msg : "";
 				alert("could not save data: " + msg);
 			});
@@ -289,7 +329,7 @@ $(document).ready(() => {
 				dataType: "json"
 			});
 
-			req.then(function(data) {
+			req.then(function (data) {
 				$(e.currentTarget)
 					.removeClass("fa-save")
 					.removeClass("saveBtn")
@@ -304,7 +344,7 @@ $(document).ready(() => {
 				});
 			});
 
-			req.catch(function(data) {
+			req.catch(function (data) {
 				const msg = data.responseJSON ? data.responseJSON.msg : "";
 				alert("could not save allowed ips: " + msg);
 			});
@@ -348,7 +388,7 @@ $(document).ready(() => {
 				dataType: "json"
 			});
 
-			req.then(function(data) {
+			req.then(function (data) {
 				$(e.currentTarget)
 					.html(`<i class="far fa-edit fa-lg"></i>`)
 					.removeClass("saveBtn")
@@ -360,7 +400,7 @@ $(document).ready(() => {
 					.attr("disabled", true);
 			});
 
-			req.catch(function(data) {
+			req.catch(function (data) {
 				const msg = data.responseJSON ? data.responseJSON.msg : "";
 				alert("could not save user: " + msg);
 			});
@@ -380,11 +420,11 @@ $(document).ready(() => {
 					method: "DELETE"
 				});
 
-				req.then(function(data) {
+				req.then(function (data) {
 					tableRow.remove();
 				});
 
-				req.catch(function(data) {
+				req.catch(function (data) {
 					const msg = data.responseJSON ? data.responseJSON.msg : "";
 					alert("could not delete user: " + msg);
 				});
@@ -443,6 +483,7 @@ $(document).ready(() => {
 
 // check if we need to show toast that settings need to be saved
 let toastShown = false;
+
 function checkToast() {
 	if (JSON.stringify(config) !== JSON.stringify(_config)) {
 		if (!toastShown) {
@@ -464,7 +505,7 @@ function createNewPeer() {
 		dataType: "json"
 	});
 
-	req.always(function(data) {
+	req.always(function (data) {
 		config.peers.push({
 			id: data.id,
 			device: "",
@@ -535,7 +576,7 @@ function createNewPeer() {
 		checkToast();
 	});
 
-	req.catch(function(data) {
+	req.catch(function (data) {
 		const msg = data.responseJSON ? data.responseJSON.msg : "";
 		alert("could not save user: " + msg);
 		window.location = "/";
@@ -555,11 +596,11 @@ function login() {
 		dataType: "json"
 	});
 
-	req.then(function(data) {
+	req.then(function (data) {
 		window.location = "/";
 	});
 
-	req.catch(function(data) {
+	req.catch(function (data) {
 		const msg = data.responseJSON ? data.responseJSON.msg : "";
 		alert("Username or Password wrong/not found (Error: " + msg + " )");
 	});
@@ -579,11 +620,11 @@ function createUser() {
 		dataType: "json"
 	});
 
-	req.then(function(data) {
+	req.then(function (data) {
 		window.location = "/";
 	});
 
-	req.catch(function(data) {
+	req.catch(function (data) {
 		const msg = data.responseJSON ? data.responseJSON.msg : "";
 		alert("Error: " + msg);
 	});
@@ -599,11 +640,11 @@ function refreshServerKeys() {
 			method: "POST"
 		});
 
-		req.then(function(data) {
+		req.then(function (data) {
 			$("#public_key").val(data.public_key);
 		});
 
-		req.catch(function(data) {
+		req.catch(function (data) {
 			const msg = data.responseJSON ? data.responseJSON.msg : "";
 			alert("could not generate new pair of keys: " + msg);
 		});
@@ -618,7 +659,7 @@ function saveAndRestart() {
 			method: "POST"
 		});
 
-		req.then(function(data) {
+		req.then(function (data) {
 			alert("config saved and wireguard restarted successfully");
 			$("#alert-container").empty();
 			$(".saveAndRestartBtn").removeClass("animated");
@@ -627,7 +668,7 @@ function saveAndRestart() {
 			_config = JSON.parse(JSON.stringify(config));
 		});
 
-		req.catch(function(data) {
+		req.catch(function (data) {
 			const msg = data.responseJSON ? data.responseJSON.msg : "";
 			alert("could not restart wireguard: " + msg);
 		});
@@ -643,11 +684,11 @@ function retreiveLogs() {
 		method: "POST"
 	});
 
-	req.then(function(res) {
+	req.then(function (res) {
 		$("#logscode").html(res.data.replace(/\n/g, "<br />"));
 	});
 
-	req.catch(function(data) {
+	req.catch(function (data) {
 		const msg = data.responseJSON ? data.responseJSON.msg : "";
 		$("#logscode").html("could not get logs (error: " + msg + " )");
 	});
@@ -673,17 +714,17 @@ function switchTrafficMode() {
 		method: "POST"
 	});
 
-	req.then(function(res) {
+	req.then(function (res) {
 		window.location = "/";
 	});
 
-	req.catch(function(data) {
+	req.catch(function (data) {
 		const msg = data.responseJSON ? data.responseJSON.msg : "";
 		alert("could not switch (error: " + msg + " )");
 	});
 }
 
 // tooltip
-$(function() {
+$(function () {
 	$("[data-toggle='tooltip']").tooltip();
 });
